@@ -11,10 +11,12 @@
 //
 // To start the server: node app.js
 // ============================================================
-
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+
+const quoteDb = require('./db')
+const Quote = require('./models/quote')
 
 // ------------------------------------------------------------
 // STEP 1 — Import your database connection and Quote model
@@ -51,7 +53,8 @@ app.use(cors())          // allows the React frontend to call this server
 // ------------------------------------------------------------
 app.get('/api/quotes', async (req, res, next) => {
   try {
-
+    const allQuotes = await Quote.findAll()
+    res.json(allQuotes)
   } catch (error) {
     next(error)
   }
@@ -70,7 +73,11 @@ app.get('/api/quotes', async (req, res, next) => {
 // ------------------------------------------------------------
 app.post('/api/quotes', async (req, res, next) => {
   try {
-
+    const newQuote = await Quote.create({
+      text: req.body.text,
+      author: req.body.author
+    })
+    res.status(201).json(newQuote)
   } catch (error) {
     next(error)
   }
@@ -91,6 +98,16 @@ app.post('/api/quotes', async (req, res, next) => {
 // ------------------------------------------------------------
 app.delete('/api/quotes/:id', async (req, res, next) => {
   try {
+    const quoteId = Number(req.params.id)
+    const quote = await Quote.findByPk(quoteId)
+
+    if (!quote) {
+     res.status(404).json({error: "Quote not found!"})
+    }
+
+    await quote.destroy()
+
+    res.sendStatus(204)
 
   } catch (error) {
     next(error)
@@ -103,8 +120,38 @@ app.delete('/api/quotes/:id', async (req, res, next) => {
 // ============================================================
 
 // GET /api/quotes/:id   — return a single quote by its id
-// PATCH /api/quotes/:id — update a quote's text or author
 
+app.get("/api/quotes/:id" , async (req, res, next) => {
+  try {
+    const quoteId = Number(req.params.id)
+    const singleQuote = await Quote.findByPk(quoteId)
+
+    if(!singleQuote) {
+      res.status(404).json({error: "Quote not found!"})
+    }
+
+    res.json(singleQuote)
+  } catch(error) {
+    next(error)
+  } 
+})
+// PATCH /api/quotes/:id — update a quote's text or author
+app.patch("/api/quotes/:id", async(req, res, next) => {
+  try {
+    const quoteId = Number(req.params.id)
+    const quote = await Quote.findByPk(quoteId)
+
+    if (!quote) {
+      res.status(404).json({error: "Quote not found!"})
+    }
+
+    await quote.update(req.body)
+
+    res.status(200).json(quote)
+  }catch(error){
+    next(error)
+  }
+})
 
 // ============================================================
 // ERROR HANDLER
@@ -126,10 +173,13 @@ app.use((error, req, res, next) => {
 // Always await it before calling app.listen.
 // ============================================================
 async function startApp() {
-  // connect to your db here before the express server listens
-
+  await quoteDb.authenticate()
+  console.log("Database connected")
+  
+  await quoteDb.sync()
 
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
-}
+  }
+  // connect to your db here before the express server listens
 
 startApp()

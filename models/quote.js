@@ -16,3 +16,19 @@
 //
 //   4. Export the model
 // ============================================================
+const { DataTypes } = require("sequelize")
+const dbConnection = require("../db")
+
+const Quote = dbConnection.define("quote" , {
+    text: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+
+    author: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
+})
+
+module.exports = Quote
