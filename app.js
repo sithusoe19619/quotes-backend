@@ -53,7 +53,7 @@ app.use(cors())          // allows the React frontend to call this server
 // ------------------------------------------------------------
 app.get('/api/quotes', async (req, res, next) => {
   try {
-    const allQuotes = await Quote.findAll()
+    const allQuotes = await Quote.findAll({order: [['id', 'ASC']],})
     res.json(allQuotes)
   } catch (error) {
     next(error)
