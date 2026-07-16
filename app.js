@@ -37,7 +37,7 @@ const app = express()
 const PORT = 8080
 
 app.use(express.json())  // lets the server read JSON from req.body
-app.use(morgan('dev'))   // logs every incoming request
+app.use(morgan('combined'))   // logs every incoming request
 app.use(cors())          // allows the React frontend to call this server
 
 
@@ -151,6 +151,10 @@ app.patch("/api/quotes/:id", async(req, res, next) => {
   }catch(error){
     next(error)
   }
+})
+
+app.use((req, res, next) => {
+  res.send('404 - You should not be here!')
 })
 
 // ============================================================

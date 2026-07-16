@@ -14,7 +14,13 @@
 // Every other file that needs the database imports from here.
 // Never create a second Sequelize connection in another file.
 // ============================================================
+require('dotenv').config()
+
 const { Sequelize } = require("sequelize")
-const quoteDb = new Sequelize("postgres://localhost:5432/quotes")
+const DB_URL = process.env.DATABASE_URL || 'postgres://localhost:5432/quotes'
+
+const quoteDb = new Sequelize(DB_URL)
+
+
 
 module.exports = quoteDb
